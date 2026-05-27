@@ -36,12 +36,24 @@ jobs:
             new_tag: ${{ steps.tag_version.outputs.new_tag }}
             new_version: ${{ steps.tag_version.outputs.new_version }}
         steps:
+            - name: Create release GitHub App token
+              id: release_app_token
+              uses: actions/create-github-app-token@v3
+              with:
+                  client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+                  private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+                  permission-contents: write
+
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
               with:
                   fetch-depth: 0
-                  # Set RELEASE_BOT_TOKEN to a fine-grained PAT or GitHub App
-                  # token for an actor allowed to bypass branch protection.
-                  token: ${{ secrets.RELEASE_BOT_TOKEN || github.token }}
+                  token: ${{ steps.release_app_token.outputs.token }}
+
+            - name: Get release GitHub App user ID
+              id: release_app_user
+              run: echo "user_id=$(gh api "/users/${{ steps.release_app_token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+              env:
+                  GH_TOKEN: ${{ steps.release_app_token.outputs.token }}
 
             - name: Install git-cliff
               uses: taiki-e/install-action@8780e44aaaf9a96a34be77a1f1feb43c179ec984 # v2
@@ -65,8 +77,8 @@ jobs:
                   if ! git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
                     echo "Creating annotated tag $NEW_TAG"
 
-                    git config user.name "github-actions[bot]"
-                    git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                    git config user.name "${{ steps.release_app_token.outputs.app-slug }}[bot]"
+                    git config user.email "${{ steps.release_app_user.outputs.user_id }}+${{ steps.release_app_token.outputs.app-slug }}[bot]@users.noreply.github.com"
 
                     NEW_VERSION="${NEW_TAG#v}"
                     NEW_VERSION="$NEW_VERSION" python3 - <<'PY'
