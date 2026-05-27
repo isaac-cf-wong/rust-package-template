@@ -18,9 +18,12 @@ repos:
       hooks:
           - id: fmt
             args: [--all, --check]
+            pass_filenames: false
           - id: cargo-check
+            pass_filenames: false
           - id: clippy
             args: [--all-targets, --all-features, --, -D, warnings]
+            pass_filenames: false
 
     - repo: https://github.com/ComPWA/taplo-pre-commit
       rev: v0.9.3
