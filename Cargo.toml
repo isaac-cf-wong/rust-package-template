@@ -15,13 +15,13 @@ categories = ["development-tools"]
 exclude = ["/.github", "/docs/template_documentation"]
 
 [dependencies]
-clap = { version = "4.5", features = ["derive"] }
-thiserror = "2.0"
+clap = { version = "4.6.1", features = ["derive"] }
+thiserror = "2.0.18"
 
 [dev-dependencies]
-assert_cmd = "2.0"
-divan = "0.1"
-predicates = "3.1"
+assert_cmd = "=2.2.2"
+divan = "=0.1.21"
+predicates = "=3.1.4"
 
 [lib]
 name = "rust_package_template"
