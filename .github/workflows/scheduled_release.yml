@@ -20,7 +20,7 @@ jobs:
 
             - name: Check for new commits
               id: check_commits
-              uses: isaac-cf-wong/detect-git-changes-action@ecc6bf915a7987eb27f70d560c8067a69b943cb5 # v0.0.14
+              uses: isaac-cf-wong/detect-git-changes-action@c49bec37fa3496222c70649af3a09e2c2612310e # v0.0.15
               with:
                   use-latest-tag: true
 
@@ -56,7 +56,7 @@ jobs:
                   GH_TOKEN: ${{ steps.release_app_token.outputs.token }}
 
             - name: Install git-cliff
-              uses: taiki-e/install-action@4684b8405694ae9dd42c9f39ba901a70ae83f4a3 # v2
+              uses: taiki-e/install-action@2ca9b94c269419b7b0c711c09d0b21c4e1d51145 # v2
               with:
                   tool: git-cliff
 
