@@ -7,33 +7,16 @@ on:
                 description: "Tag name for the publish (e.g., v1.2.3)"
                 required: true
                 type: string
-            publish:
-                description: "Publish to crates.io"
-                required: true
-                default: false
-                type: boolean
     workflow_call:
         inputs:
             tag_name:
                 description: "Tag name for the publish (e.g., v1.2.3)"
                 required: true
                 type: string
-            publish:
-                description: "Publish to crates.io"
-                required: false
-                default: false
-                type: boolean
-
-env:
-    # Template safety switch. Change this to `true` in a real package after
-    # configuring the `crates-io` environment and `CARGO_REGISTRY_TOKEN` secret.
-    PUBLISH_TO_CRATES_IO: "false"
 
 jobs:
     verify:
         runs-on: ubuntu-latest
-        outputs:
-            publish_enabled: ${{ steps.publish_gate.outputs.enabled }}
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
@@ -63,24 +46,17 @@ jobs:
             - name: Verify package
               run: cargo package
 
-            - name: Evaluate publish gate
-              id: publish_gate
-              run: |
-                  if [ "${PUBLISH_TO_CRATES_IO}" = "true" ] && [ "${{ inputs.publish }}" = "true" ]; then
-                    echo "enabled=true" >> "$GITHUB_OUTPUT"
-                  else
-                    echo "enabled=false" >> "$GITHUB_OUTPUT"
-                  fi
-
-            - name: Skip publish
-              if: ${{ steps.publish_gate.outputs.enabled != 'true' }}
+            - name: Note publish status
+              if: vars.PUBLISH_TO_CRATES_IO != 'true'
               run: |
                   echo "Publishing is disabled for this template." >> "$GITHUB_STEP_SUMMARY"
-                  echo "Set PUBLISH_TO_CRATES_IO to true and pass publish=true to enable crates.io publishing." >> "$GITHUB_STEP_SUMMARY"
+                  echo "Set the repository variable PUBLISH_TO_CRATES_IO to true to enable crates.io publishing." >> "$GITHUB_STEP_SUMMARY"
 
     publish:
         needs: verify
-        if: ${{ needs.verify.outputs.publish_enabled == 'true' }}
+        # Set the repository variable PUBLISH_TO_CRATES_IO to "true" once the
+        # 'crates-io' environment and CARGO_REGISTRY_TOKEN secret are configured.
+        if: vars.PUBLISH_TO_CRATES_IO == 'true'
         runs-on: ubuntu-latest
         environment: crates-io
         steps:
