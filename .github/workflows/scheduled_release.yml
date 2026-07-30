@@ -150,6 +150,3 @@ jobs:
         secrets: inherit
         with:
             tag_name: ${{ needs.create_tag.outputs.new_tag }}
-            # Template safety switch. Change to `true` in a real package after
-            # configuring the `crates-io` environment and `CARGO_REGISTRY_TOKEN`.
-            publish: false

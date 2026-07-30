@@ -17,6 +17,9 @@ concurrency:
 jobs:
     deploy:
         runs-on: ubuntu-latest
+        # Set the repository variable DEPLOY_DOCS to "true" once GitHub Pages
+        # is enabled (Settings -> Pages -> Source: GitHub Actions).
+        if: vars.DEPLOY_DOCS == 'true'
         environment:
             name: github-pages
             url: ${{ steps.deployment.outputs.page_url }}
