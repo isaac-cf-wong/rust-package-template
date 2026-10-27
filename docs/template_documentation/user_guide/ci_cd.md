@@ -10,9 +10,31 @@ GitHub Actions run on pull requests and pushes to `main`.
 - `publish.yml` always verifies tagged crate releases (version match,
   `cargo package`), but the `publish` job only runs when the repository
   variable `PUBLISH_TO_CRATES_IO` is `"true"`.
-- `scheduled_release.yml` checks weekly for unreleased commits, creates a tag,
-  and creates a GitHub release. It calls `publish.yml`, which is gated the
-  same way by `PUBLISH_TO_CRATES_IO`.
+- `scheduled_release.yml` checks weekly whether anything that reaches the
+  built crate changed since the latest tag (see
+  [What counts as a change](#what-counts-as-a-change)); if so, it creates a
+  tag and a GitHub release. It calls `publish.yml`, which is gated the same way
+  by `PUBLISH_TO_CRATES_IO`.
+
+## What counts as a change
+
+The `check_new_commits` job runs
+[detect-git-changes-action](https://github.com/isaac-cf-wong/detect-git-changes-action)
+with `preset: rust`. It counts a change only when it can alter the released
+crate: the crate's sources and the files they pull in (`include_str!`,
+`include_bytes!`, `#[path]` modules), the build script and the inputs it
+declares with `cargo:rerun-if-changed`, `Cargo.toml` outside development-only
+tables, the readme and license files, and, because the crate ships a binary,
+`Cargo.lock` when a dependency the binary is built with changes. Edits to
+`[dev-dependencies]`, `[lints]`, tests, benches, examples, docs, CI workflows
+and `rust-toolchain.toml` do not, so routine dev-dependency and tooling bumps
+don't trigger a release.
+
+To count more files, add them to `paths` on that step; to leave some out, use
+`exclude-paths` (for example `exclude-paths: Cargo.lock` to stop lock-file
+updates from releasing). If the preset cannot work out a build input, for
+example a build script that declares no `rerun-if-changed`, it warns and every
+changed file counts.
 
 ## Enabling publishing and docs deployment with repository variables
 
