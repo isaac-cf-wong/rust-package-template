@@ -51,6 +51,8 @@ repos:
       hooks:
           - id: markdownlint-cli2
             args: [--config, .markdownlint.yaml]
+            # The PR template becomes the PR body, so it opens at a section heading.
+            exclude: ^\.github/pull_request_template\.md$
 
     - repo: https://github.com/gitleaks/gitleaks
       rev: v8.30.1
